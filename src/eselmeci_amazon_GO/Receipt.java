@@ -1,5 +1,9 @@
 package eselmeci_amazon_GO;
 
-public class Receipt {
+import java.util.HashMap;
 
+public class Receipt {
+    Receipt(HashMap<Product, Integer> basket) {
+
+    }
 }
