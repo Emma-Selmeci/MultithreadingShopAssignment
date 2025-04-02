@@ -36,6 +36,34 @@ public class AmazonShop {
         return new ShopInterface(customer);
     }
 
+    /**
+     * Clerk objects can be created (as anonymous classes) to refill shelves
+     */
+    public static class Clerk implements Runnable {
+
+        /**
+         * Fill the shelf corresponding to product with amount
+         * @param product The Product type
+         * @param amount The amount of product to be placed on the shelf
+         */
+        public void fillProduct(Product product, int amount) {
+            synchronized (shelves[product.ordinal()]) {
+                shelves[product.ordinal()].refill(amount);
+            }
+        }
+
+        public int getShelfContent(Product product) {
+            synchronized (shelves[product.ordinal()]) {
+                return shelves[product.ordinal()].getNumOfProducts();
+            }
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
     static class ShopInterface {
         private boolean valid = true;
         private final HashMap<Product, Integer> basket = new HashMap<>();
@@ -115,11 +143,12 @@ public class AmazonShop {
             int cost = getCurrentCost();
             if(customer.getMoney() < cost) throw new GreedException("Insufficient money to buy products in basket");
             customer.takeMoney(cost);
-            valid = false;
             synchronized (customers) {
                 customers.remove(customer);
             }
-            return new Receipt(basket, getCurrentCost());
+            Receipt r = new Receipt(basket,getCurrentCost());
+            valid = false;
+            return r;
         }
 
         public static void main(String[] args) {
@@ -154,4 +183,60 @@ public class AmazonShop {
     }
 
     private AmazonShop() {} //Please don't make an instance of AmazonShop
+
+    public static void main(String[] args) {
+        Clerk c1 = new Clerk() {
+            @Override
+            public void run() {
+                while(true) {
+                    if(getShelfContent(Product.values()[0]) < 0 || getShelfContent(Product.values()[0]) > Shelf.getCapacity()) System.out.println("Concurrency error!");
+                    fillProduct(Product.values()[0],3);
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {}
+                }
+            }
+        };
+
+        Clerk c2 = new Clerk() {
+            @Override
+            public void run() {
+                while(true) {
+                    if(getShelfContent(Product.values()[0]) < 0 || getShelfContent(Product.values()[0]) > Shelf.getCapacity()) System.out.println("Concurrency error!");
+                    if(getShelfContent(Product.values()[1]) < 0 || getShelfContent(Product.values()[1]) > Shelf.getCapacity()) System.out.println("Concurrency error!");
+                    fillProduct(Product.values()[0],1);
+                    fillProduct(Product.values()[1],4);
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {}
+                }
+            }
+        };
+
+        Customer customer1 = new Customer("Customer1",10000) {
+            @Override
+            public void run() {
+                enterShop();
+                while(true) {
+                    takeProduct(Product.values()[0],2);
+                }
+            }
+        };
+
+        Customer customer2 = new Customer("Customer1",10000) {
+            @Override
+            public void run() {
+                enterShop();
+                while(true) {
+                    takeProduct(Product.values()[1],15);
+                }
+            }
+        };
+
+        new Thread(c1).start();
+        new Thread(c2).start();
+        new Thread(customer1).start();
+        new Thread(customer2).start();
+
+    }
 }
