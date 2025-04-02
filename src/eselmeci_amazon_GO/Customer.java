@@ -15,6 +15,7 @@ public class Customer implements Runnable {
         wallet+=amount;
     }
 
+    void takeMoney(int amount) {wallet-=amount;}
     public int getMoney() {
         return wallet;
     }

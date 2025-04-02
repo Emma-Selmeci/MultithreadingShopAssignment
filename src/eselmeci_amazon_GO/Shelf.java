@@ -29,7 +29,7 @@ class Shelf {
 
     /**
      * Remove up to amount products from numOfProducts.
-     * Ifamount is greater than the numOfProducts, remove all.
+     * If amount is greater than the numOfProducts, remove all.
      * @param amount numOfProducts will be reduced by amount
      * @return the reduction (might be lesser than amount)
      * @throws InvalidParameterException if amount is less than 0
@@ -51,14 +51,14 @@ class Shelf {
 
     /**
      * Adds amount to numOfProducts, up to capacity
-     * @param amount
+     * @param amount the amount to be added
      */
     void refill(int amount) {
         numOfProducts += amount;
         if(numOfProducts > capacity) numOfProducts = capacity;
     }
 
-    private static int getCapacity() {
+    static int getCapacity() {
         return capacity;
     }
 
@@ -66,11 +66,13 @@ class Shelf {
         System.out.println("Testing Shelf");
 
         System.out.println("Testing Shelf()");
-        Shelf[] sl = new Shelf[100];
         boolean successful = true;
-        for(Shelf s : sl) if(s.getNumOfProducts() < 0 || s.getNumOfProducts() > getCapacity()) {
-            successful = false;
-            break;
+        for(int i = 0; i < 100; ++i) {
+            Shelf s = new Shelf();
+            if(s.getNumOfProducts() < 0 || s.getNumOfProducts() > getCapacity()) {
+                successful = false;
+                break;
+            }
         }
         if(successful) System.out.println("Test successful"); else System.out.println("Test failed");
 
@@ -82,7 +84,7 @@ class Shelf {
         } catch(InvalidParameterException exception) {
             e = exception;
         }
-        if(e != null && e instanceof  InvalidParameterException) System.out.println("Test successful"); else System.out.println("Test failed");
+        if(e != null) System.out.println("Test successful"); else System.out.println("Test failed");
 
         s.refill(capacity);
         int result = s.take(1);
